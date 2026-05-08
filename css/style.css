@@ -122,7 +122,7 @@ input, select {
 }
 
 .btn-start:hover, .btn-primary:hover {
-    background-color: #f97316 !important;
+    background-color: #fb923c !important;
     transform: translateY(-5px);
     box-shadow: 0 15px 25px rgba(251, 146, 60, 0.4);
 }
