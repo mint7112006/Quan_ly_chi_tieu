@@ -91,7 +91,14 @@ function renderTransactions() {
             <td class="fw-bold ${t.type === 'expense' ? 'text-danger' : 'text-success'}">
                 ${t.type === 'expense' ? '-' : '+'}${t.amount.toLocaleString()}đ
             </td>
-            <td><span class="badge ${getCategoryBadge(t.category)}">${t.category.toUpperCase()}</span></td>
+            <td>
+                <span class="badge ${getCategoryBadge(t.category)}">
+                ${t.category === 'food' ? 'Ăn uống' : 
+                t.category === 'transport' ? 'Di chuyển' : 
+                t.category === 'study' ? 'Học tập' : 
+                t.category === 'entertainment' ? 'Giải trí' : 'Khác'}
+                </span>
+            </td>
             <td class="text-center pe-4">
                 <button class="btn btn-outline-danger btn-sm" onclick="deleteTransaction(${t.id})">
                     <i class="bi bi-trash"></i> Xóa
