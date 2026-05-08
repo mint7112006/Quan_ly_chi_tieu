@@ -4,10 +4,15 @@ const incomeDisplay = document.getElementById('total-income');
 const expenseDisplay = document.getElementById('total-expense');
 const balanceDisplay = document.getElementById('balance');
 
+// Các phần tử của thanh Progress Bar mới
+const progressBar = document.getElementById('budget-progress');
+const percentText = document.getElementById('percent-text');
+const alertMsg = document.getElementById('alert-msg');
+
 // GĐ 5.2.2: Load dữ liệu từ LocalStorage
 let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 
-// GĐ 5.1: Hàm tính toán số liệu Dashboard
+// GĐ 5.1: Hàm tính toán số liệu Dashboard & Thanh tiến độ
 function updateDashboard() {
     const totalIncome = transactions
         .filter(t => t.type === 'income')
@@ -19,29 +24,53 @@ function updateDashboard() {
 
     const totalBalance = totalIncome - totalExpense;
 
-    // GĐ 4.1.2: Format tiền VNĐ (thêm ký tự đ)
+    // 1. Cập nhật các con số Dashboard
     incomeDisplay.innerText = totalIncome.toLocaleString() + 'đ';
     expenseDisplay.innerText = totalExpense.toLocaleString() + 'đ';
     balanceDisplay.innerText = totalBalance.toLocaleString() + 'đ';
+
+    // 2. Tính phần trăm chi tiêu
+    let percent = 0;
+    if (totalIncome > 0) {
+        percent = (totalExpense / totalIncome) * 100;
+    }
+
+    // 3. Cập nhật thanh Progress Bar và Thông báo
+    percentText.innerText = Math.round(percent) + '%';
+    progressBar.style.width = Math.min(percent, 100) + '%';
+
+    // Xử lý thông báo và màu sắc cảnh báo (GĐ 5.1.4 Nâng cao)
+    if (percent >= 100) {
+        progressBar.className = "progress-bar progress-bar-striped progress-bar-animated bg-danger"; 
+        alertMsg.innerText = "🛑 Cảnh báo: Bạn đã tiêu hết tiền kiếm được rồi!";
+        alertMsg.className = "mt-2 fw-medium text-danger text-center d-block";
+    } else if (percent >= 80) {
+        progressBar.className = "progress-bar progress-bar-striped progress-bar-animated bg-warning text-dark";
+        alertMsg.innerText = "⚠️ Chú ý: Bạn đã tiêu quá 80% thu nhập tháng này.";
+        alertMsg.className = "mt-2 fw-medium text-warning text-center d-block";
+    } else {
+        progressBar.className = "progress-bar progress-bar-striped progress-bar-animated bg-info";
+        alertMsg.innerText = "✅ Bạn vẫn đang kiểm soát tốt chi tiêu.";
+        alertMsg.className = "mt-2 fw-medium text-success text-center d-block";
+    }
 }
 
-// GĐ 4.1.3: Hàm trả về màu sắc badge theo danh mục
+// GĐ 4.1.3: Hàm màu sắc badge theo danh mục
 function getCategoryBadge(category) {
     const colors = {
-        food: 'bg-warning text-dark',   // Ăn uống - Vàng
-        transport: 'bg-info text-white', // Di chuyển - Xanh nhạt
-        study: 'bg-primary text-white',  // Học tập - Xanh đậm
-        entertainment: 'bg-purple',      // Giải trí - Tím (tùy chỉnh thêm CSS)
-        other: 'bg-secondary text-white' // Khác - Xám
+        food: 'bg-warning text-dark',
+        transport: 'bg-info text-white',
+        study: 'bg-primary text-white',
+        entertainment: 'bg-danger text-white', // Đổi màu xíu cho nổi
+        other: 'bg-secondary text-white'
     };
     return colors[category] || 'bg-secondary';
 }
 
-// GĐ 4.1 & 4.3: Render danh sách & Xử lý Empty State
+// GĐ 4.1 & 4.3: Render danh sách & Empty State
 function renderTransactions() {
     transactionList.innerHTML = ''; 
 
-    // GĐ 4.3.1: Nếu mảng rỗng thì hiển thị thông báo
     if (transactions.length === 0) {
         transactionList.innerHTML = `
             <tr>
@@ -56,12 +85,12 @@ function renderTransactions() {
     transactions.forEach((t) => {
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${t.description}</td>
+            <td class="ps-4">${t.description}</td>
             <td class="fw-bold ${t.type === 'expense' ? 'text-danger' : 'text-success'}">
                 ${t.type === 'expense' ? '-' : '+'}${t.amount.toLocaleString()}đ
             </td>
             <td><span class="badge ${getCategoryBadge(t.category)}">${t.category.toUpperCase()}</span></td>
-            <td class="text-center">
+            <td class="text-center pe-4">
                 <button class="btn btn-outline-danger btn-sm" onclick="deleteTransaction(${t.id})">
                     <i class="bi bi-trash"></i> Xóa
                 </button>
@@ -79,26 +108,23 @@ financeForm.addEventListener('submit', function(e) {
     const descInput = document.getElementById('description');
 
     const newTransaction = {
-        id: Date.now(), // GĐ 3.2.1: Tạo ID duy nhất
+        id: Date.now(),
         type: document.getElementById('type').value,
         description: descInput.value.trim(),
         amount: parseFloat(amountInput.value),
         category: document.getElementById('category').value
     };
 
-    // GĐ 3.1.2 & 3.1.3: Validation
     if (newTransaction.description === "") {
-        alert("🛑 Nội dung không được để trống.");
+        alert("🛑 Hằng ơi, nội dung không được để trống nha!");
         return;
     }
     if (isNaN(newTransaction.amount) || newTransaction.amount <= 0) {
-        alert("🛑 Số tiền phải là số dương lớn hơn 0 nha.");
+        alert("🛑 Số tiền phải lớn hơn 0 nhé!");
         return;
     }
 
     transactions.push(newTransaction);
-    
-    // GĐ 5.2.1: Save vào LocalStorage
     localStorage.setItem('transactions', JSON.stringify(transactions));
     
     updateDashboard();
@@ -106,9 +132,9 @@ financeForm.addEventListener('submit', function(e) {
     financeForm.reset();
 });
 
-// GĐ 4.2 & 5.2.3: Xóa và Sync dữ liệu
+// GĐ 4.2: Xóa dữ liệu
 function deleteTransaction(id) {
-    if (confirm("Bạn có chắc chắn muốn xóa giao dịch này không?")) {
+    if (confirm("Hằng có chắc chắn muốn xóa giao dịch này không?")) {
         transactions = transactions.filter(t => t.id !== id);
         localStorage.setItem('transactions', JSON.stringify(transactions));
         updateDashboard();
@@ -116,6 +142,6 @@ function deleteTransaction(id) {
     }
 }
 
-// Khởi chạy lần đầu
+// Chạy lần đầu khi load trang
 updateDashboard();
 renderTransactions();
