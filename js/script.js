@@ -4,88 +4,118 @@ const incomeDisplay = document.getElementById('total-income');
 const expenseDisplay = document.getElementById('total-expense');
 const balanceDisplay = document.getElementById('balance');
 
-// Khởi tạo danh sách giao dịch (Mục 5.2.2 & 5.2.4)
-// Lấy dữ liệu từ LocalStorage, nếu rỗng thì tạo mảng mới []
+// GĐ 5.2.2: Load dữ liệu từ LocalStorage
 let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 
-let totalIncome = 0;
-let totalExpense = 0;
-
-// 1. Hàm lưu dữ liệu vào LocalStorage (Mục 5.2.1)
-function saveToLocalStorage() {
-    localStorage.setItem('transactions', JSON.stringify(transactions));
-}
-
-// 2. Hàm tính toán và cập nhật Dashboard (Mục 5.1)
+// GĐ 5.1: Hàm tính toán số liệu Dashboard
 function updateDashboard() {
-    totalIncome = transactions
+    const totalIncome = transactions
         .filter(t => t.type === 'income')
         .reduce((sum, t) => sum + t.amount, 0);
 
-    totalExpense = transactions
+    const totalExpense = transactions
         .filter(t => t.type === 'expense')
         .reduce((sum, t) => sum + t.amount, 0);
 
     const totalBalance = totalIncome - totalExpense;
 
-    incomeDisplay.innerText = totalIncome.toLocaleString();
-    expenseDisplay.innerText = totalExpense.toLocaleString();
-    balanceDisplay.innerText = totalBalance.toLocaleString();
+    // GĐ 4.1.2: Format tiền VNĐ (thêm ký tự đ)
+    incomeDisplay.innerText = totalIncome.toLocaleString() + 'đ';
+    expenseDisplay.innerText = totalExpense.toLocaleString() + 'đ';
+    balanceDisplay.innerText = totalBalance.toLocaleString() + 'đ';
 }
 
-// 3. Hàm hiển thị danh sách ra màn hình (Mục 4.1)
+// GĐ 4.1.3: Hàm trả về màu sắc badge theo danh mục
+function getCategoryBadge(category) {
+    const colors = {
+        food: 'bg-warning text-dark',   // Ăn uống - Vàng
+        transport: 'bg-info text-white', // Di chuyển - Xanh nhạt
+        study: 'bg-primary text-white',  // Học tập - Xanh đậm
+        entertainment: 'bg-purple',      // Giải trí - Tím (tùy chỉnh thêm CSS)
+        other: 'bg-secondary text-white' // Khác - Xám
+    };
+    return colors[category] || 'bg-secondary';
+}
+
+// GĐ 4.1 & 4.3: Render danh sách & Xử lý Empty State
 function renderTransactions() {
-    transactionList.innerHTML = ''; // Xóa bảng cũ để vẽ lại
+    transactionList.innerHTML = ''; 
+
+    // GĐ 4.3.1: Nếu mảng rỗng thì hiển thị thông báo
+    if (transactions.length === 0) {
+        transactionList.innerHTML = `
+            <tr>
+                <td colspan="4" class="text-center text-muted py-4">
+                    🎬 Chưa có giao dịch nào. Hãy bắt đầu nhập nhé!
+                </td>
+            </tr>
+        `;
+        return;
+    }
 
     transactions.forEach((t) => {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${t.description}</td>
-            <td style="color: ${t.type === 'expense' ? 'red' : 'green'}" class="fw-bold">
-                ${t.type === 'expense' ? '-' : '+'}${t.amount.toLocaleString()}
+            <td class="fw-bold ${t.type === 'expense' ? 'text-danger' : 'text-success'}">
+                ${t.type === 'expense' ? '-' : '+'}${t.amount.toLocaleString()}đ
             </td>
-            <td><span class="badge bg-secondary">${t.category}</span></td>
+            <td><span class="badge ${getCategoryBadge(t.category)}">${t.category.toUpperCase()}</span></td>
             <td class="text-center">
-                <button class="btn btn-danger btn-sm" onclick="deleteTransaction(${t.id})">Xóa</button>
+                <button class="btn btn-outline-danger btn-sm" onclick="deleteTransaction(${t.id})">
+                    <i class="bi bi-trash"></i> Xóa
+                </button>
             </td>
         `;
         transactionList.appendChild(row);
     });
 }
 
-// 4. Hàm thêm giao dịch mới (Mục 3.3)
+// GĐ 3: Xử lý thêm giao dịch
 financeForm.addEventListener('submit', function(e) {
     e.preventDefault();
 
+    const amountInput = document.getElementById('amount');
+    const descInput = document.getElementById('description');
+
     const newTransaction = {
-        id: Date.now(), // Tạo ID duy nhất (Mục 3.2.1)
+        id: Date.now(), // GĐ 3.2.1: Tạo ID duy nhất
         type: document.getElementById('type').value,
-        description: document.getElementById('description').value,
-        amount: parseFloat(document.getElementById('amount').value),
+        description: descInput.value.trim(),
+        amount: parseFloat(amountInput.value),
         category: document.getElementById('category').value
     };
 
-    if (!newTransaction.description || isNaN(newTransaction.amount) || newTransaction.amount <= 0) {
-        alert("Vui lòng nhập đúng dữ liệu!");
+    // GĐ 3.1.2 & 3.1.3: Validation
+    if (newTransaction.description === "") {
+        alert("🛑 Nội dung không được để trống.");
+        return;
+    }
+    if (isNaN(newTransaction.amount) || newTransaction.amount <= 0) {
+        alert("🛑 Số tiền phải là số dương lớn hơn 0 nha.");
         return;
     }
 
     transactions.push(newTransaction);
-    saveToLocalStorage(); // Lưu vào bộ nhớ (Mục 5.2.1)
-    updateDashboard();    // Cập nhật số liệu
-    renderTransactions(); // Vẽ lại bảng
+    
+    // GĐ 5.2.1: Save vào LocalStorage
+    localStorage.setItem('transactions', JSON.stringify(transactions));
+    
+    updateDashboard();
+    renderTransactions();
     financeForm.reset();
 });
 
-// 5. Hàm xóa giao dịch (Mục 4.2 & 5.2.3)
+// GĐ 4.2 & 5.2.3: Xóa và Sync dữ liệu
 function deleteTransaction(id) {
-    // Lọc bỏ giao dịch có ID này (Đồng bộ lại mảng)
-    transactions = transactions.filter(t => t.id !== id);
-    saveToLocalStorage(); // Cập nhật lại bộ nhớ (Mục 5.2.3)
-    updateDashboard();
-    renderTransactions();
+    if (confirm("Bạn có chắc chắn muốn xóa giao dịch này không?")) {
+        transactions = transactions.filter(t => t.id !== id);
+        localStorage.setItem('transactions', JSON.stringify(transactions));
+        updateDashboard();
+        renderTransactions();
+    }
 }
 
-// 6. Chạy ngay khi mở web (Mục 5.2.2)
+// Khởi chạy lần đầu
 updateDashboard();
 renderTransactions();
