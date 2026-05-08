@@ -1,66 +1,132 @@
-/* Tổng thể trang web */
+/* 1. NHÚNG PHÔNG CHỮ & CÀI ĐẶT CHUNG */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f7f6;
-    padding: 20px;
-    color: #333;
+    font-family: 'Poppins', sans-serif;
+    background-color: #f3f0ff; /* Tím Lavender nhạt */
+    padding: 20px 0;
+    color: #4b5563;
+    margin: 0;
 }
 
-h1 {
-    text-align: center;
-    color: #2c3e50;
-}
-
-/* Định dạng khu vực Form nhập */
-section {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+/* 2. LOGO NHÓM 4 - CÂN ĐỐI & HẠ THẤP */
+.brand-container {
+    display: flex !important;      /* Bắt buộc dàn hàng ngang */
+    flex-direction: row !important; /* Đảm bảo không bị xếp chồng dọc */
+    align-items: center;            /* Căn giữa cho thẳng hàng tăm tắp */
+    justify-content: center;        /* Đưa cả khối vào giữa màn hình */
+    gap: 12px;                      /* Khoảng cách vừa phải giữa icon và chữ */
+    margin-top: 50px;
     margin-bottom: 20px;
+
+    padding-right: 100px;
 }
 
-input, select, button {
-    padding: 10px;
-    margin: 5px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+.brand-icon {
+    font-size: 3.8rem; /* Size icon khớp với chữ */
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    transform: translateY(6px); /* Hạ thấp túi tiền xuống cho bằng chân chữ */
 }
 
-button {
-    background-color: #27ae60;
-    color: white;
-    border: none;
-    cursor: pointer;
-    transition: 0.3s;
+.brand-title {
+    font-size: 3.8rem; /* Size chữ Nhóm 4 */
+    font-weight: 700;
+    color: #7c3aed; /* Tím Lavender chủ đạo */
+    margin: 0 !important;
+    line-height: 1;
+    letter-spacing: -3px; 
 }
 
-button:hover {
-    background-color: #219150;
-}
-
-/* Định dạng cái bảng lịch sử */
-table {
-    background: white;
-    border-collapse: collapse;
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-th {
-    background-color: #34495e;
-    color: white;
-    padding: 12px;
-}
-
-td {
-    padding: 10px;
+/* 3. LỜI CHÀO & TAG PTIT */
+p.mb-4 {
+    margin-bottom: 40px !important; /* Hạ thấp dòng lời chào xuống */
+    font-size: 1.1rem;
+    color: #6b7280;
     text-align: center;
-    border-bottom: 1px solid #eee;
 }
 
-/* Màu sắc cho số dư */
-#balance {
-    color: #e67e22;
-    font-weight: bold;
+p b { color: #fb923c; } /* Màu cam điểm nhấn */
+
+.ptit-tag {
+    margin-top: 40px;
+    font-size: 0.85rem;
+    color: #9ca3af;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-align: center;
 }
+
+/* 4. DASHBOARD MÀU PASTEL & CHỮ ĐEN */
+.card {
+    border-radius: 35px !important; /* Bo góc mượt mà */
+    box-shadow: 0 10px 25px rgba(124, 58, 237, 0.06) !important;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    transition: transform 0.3s ease;
+}
+
+/* Ô Tổng Thu - Xanh Lá Pastel */
+.card.bg-success {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%) !important;
+    border: 1px solid #bbf7d0 !important;
+}
+
+/* Ô Tổng Chi - Cam Nhạt Pastel */
+.card.bg-danger {
+    background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%) !important;
+    border: 1px solid #fed7aa !important;
+}
+
+/* Ô Số Dư - Tím Nhạt Pastel */
+.card.bg-primary {
+    background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%) !important;
+    border: 1px solid #ddd6fe !important;
+}
+
+/* Chỉnh chữ tiêu đề ôDashboard */
+.card h5.fw-normal {
+    color: #4b5563 !important; /* Chữ xám đen rõ nét */
+    font-weight: 500;
+}
+
+/* Chỉnh chữ số tiền màu ĐEN đậm */
+#total-income, #total-expense, #balance {
+    color: #1e1b4b !important; /* Chữ số màu đen đậm cực rõ */
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+/* 5. FORM NHẬP & BẢNG LỊCH SỬ */
+section {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    padding: 30px;
+    border-radius: 35px !important;
+}
+
+input, select {
+    padding: 12px 15px;
+    border: 1px solid #e0d7ff;
+    border-radius: 15px;
+}
+
+.btn-start, .btn-primary {
+    background-color: #fb923c !important; /* Cam đất đồng bộ */
+    color: white;
+    font-weight: 600;
+    padding: 15px 45px;
+    border-radius: 20px;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.btn-start:hover, .btn-primary:hover {
+    background-color: #f97316 !important;
+    transform: translateY(-5px);
+    box-shadow: 0 15px 25px rgba(251, 146, 60, 0.4);
+}
+
+.table-responsive { border-radius: 25px; overflow: hidden; }
+th { background-color: #7c3aed !important; color: white; padding: 18px; }
+td { padding: 15px; text-align: center; border-bottom: 1px solid #f3f0ff; }
