@@ -9,16 +9,28 @@ const progressBar = document.getElementById('budget-progress');
 const percentText = document.getElementById('percent-text');
 const alertMsg = document.getElementById('alert-msg');
 
+// --- CHÈN BƯỚC 1 VÀO ĐÂY ---
+const monthFilter = document.getElementById('month-filter');
+let myChart; // Biến dùng để lưu trữ và quản lý biểu đồ Chart.js
+
 // GĐ 5.2.2: Load dữ liệu từ LocalStorage
 let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 
 // GĐ 5.1: Hàm tính toán số liệu Dashboard & Thanh tiến độ
 function updateDashboard() {
-    const totalIncome = transactions
+    const selectedMonth = monthFilter.value;
+    
+    // THÊM: Lọc dữ liệu theo tháng trước khi tính toán
+    const displayData = selectedMonth === 'all' 
+        ? transactions 
+        : transactions.filter(t => t.date && new Date(t.date).getMonth() === parseInt(selectedMonth));
+
+    // SỬA: Đổi transactions thành displayData để số liệu Dashboard nhảy theo tháng
+    const totalIncome = displayData
         .filter(t => t.type === 'income')
         .reduce((sum, t) => sum + t.amount, 0);
 
-    const totalExpense = transactions
+    const totalExpense = displayData
         .filter(t => t.type === 'expense')
         .reduce((sum, t) => sum + t.amount, 0);
 
@@ -40,7 +52,6 @@ function updateDashboard() {
         percentText.innerText = Math.round(percent) + '%';
         progressBar.style.width = Math.min(percent, 100) + '%';
 
-        // Xử lý thông báo và màu sắc cảnh báo (GĐ 5.1.4 Nâng cao)
         if (percent >= 100) {
             progressBar.className = "progress-bar progress-bar-striped progress-bar-animated bg-danger"; 
             alertMsg.innerText = "🛑 Cảnh báo: Bạn đã tiêu hết tiền kiếm được rồi!";
@@ -71,20 +82,29 @@ function getCategoryBadge(category) {
 
 // GĐ 4.1 & 4.3: Render danh sách & Empty State
 function renderTransactions() {
+    const selectedMonth = monthFilter.value;
+    
+    // THÊM: Lọc dữ liệu theo tháng trước khi hiện danh sách
+    const displayData = selectedMonth === 'all' 
+        ? transactions 
+        : transactions.filter(t => t.date && new Date(t.date).getMonth() === parseInt(selectedMonth));
+
     transactionList.innerHTML = ''; 
 
-    if (transactions.length === 0) {
+    // SỬA: Kiểm tra displayData thay vì transactions
+    if (displayData.length === 0) {
         transactionList.innerHTML = `
             <tr>
                 <td colspan="4" class="text-center text-muted py-4">
-                    🎬 Chưa có giao dịch nào. Hãy bắt đầu nhập nhé!
+                    🎬 Không có giao dịch nào trong tháng này.
                 </td>
             </tr>
         `;
         return;
     }
 
-    transactions.forEach((t) => {
+    // SỬA: Duyệt qua displayData
+    displayData.forEach((t) => {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td class="ps-4">${t.description}</td>
@@ -109,7 +129,7 @@ function renderTransactions() {
     });
 }
 
-// GĐ 3: Xử lý thêm giao dịch (Với Validation chi tiết của Hằng)
+// GĐ 3: Xử lý thêm giao dịch
 financeForm.addEventListener('submit', function(e) {
     e.preventDefault();
 
@@ -121,31 +141,30 @@ financeForm.addEventListener('submit', function(e) {
         type: document.getElementById('type').value,
         description: descInput.value.trim(),
         amount: parseFloat(amountInput.value),
-        category: document.getElementById('category').value
+        category: document.getElementById('category').value,
+        date: new Date().toISOString() // QUAN TRỌNG: Thêm ngày tháng thực tế
     };
 
-    // --- ĐÂY LÀ CÁC DÒNG VALIDATION HẰNG CẦN NHÉ ---
+    // --- VALIDATION GIỮ NGUYÊN ---
     if (newTransaction.description === "") {
-        alert("🛑 Nội dung không được để trống nha!");
+        alert("🛑 Nội dung không được để trống.");
         return;
     }
-    
     if (isNaN(newTransaction.amount)) {
         alert("🛑 Bạn chưa nhập số tiền.");
         return;
     }
-
     if (newTransaction.amount <= 0) {
         alert("🛑 Số tiền phải lớn hơn 0.");
         return;
     }
-    // ----------------------------------------------
 
     transactions.push(newTransaction);
     localStorage.setItem('transactions', JSON.stringify(transactions));
     
     updateDashboard();
     renderTransactions();
+    drawChart(); // Cập nhật biểu đồ khi thêm mới
     financeForm.reset();
 });
 
@@ -156,9 +175,49 @@ function deleteTransaction(id) {
         localStorage.setItem('transactions', JSON.stringify(transactions));
         updateDashboard();
         renderTransactions();
+        drawChart(); // Cập nhật biểu đồ khi xóa
     }
 }
 
-// Khởi chạy lần đầu
+// Hàm vẽ biểu đồ xu hướng chi tiêu
+function drawChart() {
+    const ctx = document.getElementById('myChart');
+    if (!ctx) return;
+
+    if (myChart) { myChart.destroy(); }
+
+    const monthlyExpenses = Array(12).fill(0);
+    transactions.forEach(t => {
+        if (t.type === 'expense' && t.date) {
+            const month = new Date(t.date).getMonth();
+            monthlyExpenses[month] += t.amount;
+        }
+    });
+
+    myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'],
+            datasets: [{
+                label: 'Chi tiêu (VNĐ)',
+                data: monthlyExpenses,
+                backgroundColor: '#fb923c',
+                borderRadius: 8
+            }]
+        },
+        options: { responsive: true }
+    });
+}
+
+// Lắng nghe sự kiện lọc tháng
+if (monthFilter) {
+    monthFilter.addEventListener('change', () => {
+        updateDashboard();
+        renderTransactions();
+    });
+}
+
+// KHỞI CHẠY LẦN ĐẦU
 updateDashboard();
 renderTransactions();
+drawChart(); // Đảm bảo biểu đồ vẽ ngay khi load trang
