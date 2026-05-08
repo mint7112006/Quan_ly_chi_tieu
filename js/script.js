@@ -4,7 +4,7 @@ const incomeDisplay = document.getElementById('total-income');
 const expenseDisplay = document.getElementById('total-expense');
 const balanceDisplay = document.getElementById('balance');
 
-// Các phần tử của thanh Progress Bar mới
+// Các phần tử của thanh Progress Bar
 const progressBar = document.getElementById('budget-progress');
 const percentText = document.getElementById('percent-text');
 const alertMsg = document.getElementById('alert-msg');
@@ -36,22 +36,24 @@ function updateDashboard() {
     }
 
     // 3. Cập nhật thanh Progress Bar và Thông báo
-    percentText.innerText = Math.round(percent) + '%';
-    progressBar.style.width = Math.min(percent, 100) + '%';
+    if (percentText && progressBar && alertMsg) {
+        percentText.innerText = Math.round(percent) + '%';
+        progressBar.style.width = Math.min(percent, 100) + '%';
 
-    // Xử lý thông báo và màu sắc cảnh báo (GĐ 5.1.4 Nâng cao)
-    if (percent >= 100) {
-        progressBar.className = "progress-bar progress-bar-striped progress-bar-animated bg-danger"; 
-        alertMsg.innerText = "🛑 Cảnh báo: Bạn đã tiêu hết tiền kiếm được rồi!";
-        alertMsg.className = "mt-2 fw-medium text-danger text-center d-block";
-    } else if (percent >= 80) {
-        progressBar.className = "progress-bar progress-bar-striped progress-bar-animated bg-warning text-dark";
-        alertMsg.innerText = "⚠️ Chú ý: Bạn đã tiêu quá 80% thu nhập tháng này.";
-        alertMsg.className = "mt-2 fw-medium text-warning text-center d-block";
-    } else {
-        progressBar.className = "progress-bar progress-bar-striped progress-bar-animated bg-info";
-        alertMsg.innerText = "✅ Bạn vẫn đang kiểm soát tốt chi tiêu.";
-        alertMsg.className = "mt-2 fw-medium text-success text-center d-block";
+        // Xử lý thông báo và màu sắc cảnh báo (GĐ 5.1.4 Nâng cao)
+        if (percent >= 100) {
+            progressBar.className = "progress-bar progress-bar-striped progress-bar-animated bg-danger"; 
+            alertMsg.innerText = "🛑 Cảnh báo: Bạn đã tiêu hết tiền kiếm được rồi!";
+            alertMsg.className = "mt-2 fw-medium text-danger text-center d-block";
+        } else if (percent >= 80) {
+            progressBar.className = "progress-bar progress-bar-striped progress-bar-animated bg-warning text-dark";
+            alertMsg.innerText = "⚠️ Chú ý: Bạn đã tiêu quá 80% thu nhập tháng này.";
+            alertMsg.className = "mt-2 fw-medium text-warning text-center d-block";
+        } else {
+            progressBar.className = "progress-bar progress-bar-striped progress-bar-animated bg-info";
+            alertMsg.innerText = "✅ Bạn vẫn đang kiểm soát tốt chi tiêu.";
+            alertMsg.className = "mt-2 fw-medium text-success text-center d-block";
+        }
     }
 }
 
@@ -61,7 +63,7 @@ function getCategoryBadge(category) {
         food: 'bg-warning text-dark',
         transport: 'bg-info text-white',
         study: 'bg-primary text-white',
-        entertainment: 'bg-danger text-white', // Đổi màu xíu cho nổi
+        entertainment: 'bg-danger text-white',
         other: 'bg-secondary text-white'
     };
     return colors[category] || 'bg-secondary';
@@ -100,7 +102,7 @@ function renderTransactions() {
     });
 }
 
-// GĐ 3: Xử lý thêm giao dịch
+// GĐ 3: Xử lý thêm giao dịch (Với Validation chi tiết của Hằng)
 financeForm.addEventListener('submit', function(e) {
     e.preventDefault();
 
@@ -115,14 +117,22 @@ financeForm.addEventListener('submit', function(e) {
         category: document.getElementById('category').value
     };
 
+    // --- ĐÂY LÀ CÁC DÒNG VALIDATION HẰNG CẦN NHÉ ---
     if (newTransaction.description === "") {
-        alert("🛑 Hằng ơi, nội dung không được để trống nha!");
+        alert("🛑 Nội dung không được để trống nha!");
         return;
     }
-    if (isNaN(newTransaction.amount) || newTransaction.amount <= 0) {
-        alert("🛑 Số tiền phải lớn hơn 0 nhé!");
+    
+    if (isNaN(newTransaction.amount)) {
+        alert("🛑 Bạn chưa nhập số tiền.");
         return;
     }
+
+    if (newTransaction.amount <= 0) {
+        alert("🛑 Số tiền phải lớn hơn 0.");
+        return;
+    }
+    // ----------------------------------------------
 
     transactions.push(newTransaction);
     localStorage.setItem('transactions', JSON.stringify(transactions));
@@ -134,7 +144,7 @@ financeForm.addEventListener('submit', function(e) {
 
 // GĐ 4.2: Xóa dữ liệu
 function deleteTransaction(id) {
-    if (confirm("Hằng có chắc chắn muốn xóa giao dịch này không?")) {
+    if (confirm("Bạn có chắc chắn muốn xóa giao dịch này không?")) {
         transactions = transactions.filter(t => t.id !== id);
         localStorage.setItem('transactions', JSON.stringify(transactions));
         updateDashboard();
@@ -142,6 +152,6 @@ function deleteTransaction(id) {
     }
 }
 
-// Chạy lần đầu khi load trang
+// Khởi chạy lần đầu
 updateDashboard();
 renderTransactions();
