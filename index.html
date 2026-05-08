@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Chi Tiêu - Nhóm 6</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-light">
+
+    <div class="container py-4">
+        <h1 class="text-center mb-4 text-primary fw-bold">QUẢN LÝ CHI TIÊU CÁ NHÂN</h1>
+
+        <div class="row text-center mb-4">
+            <div class="col-md-4 mb-3">
+                <div class="card bg-success text-white shadow-sm p-3">
+                    <h5 class="fw-normal">Tổng Thu (+)</h5>
+                    <h3 id="total-income" class="fw-bold">0</h3>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card bg-danger text-white shadow-sm p-3">
+                    <h5 class="fw-normal">Tổng Chi (-)</h5>
+                    <h3 id="total-expense" class="fw-bold">0</h3>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card bg-primary text-white shadow-sm p-3">
+                    <h5 class="fw-normal">Số Dư Hiện Tại</h5>
+                    <h3 id="balance" class="fw-bold">0</h3>
+                </div>
+            </div>
+        </div>
+
+        <section class="card p-4 shadow-sm mb-4">
+            <form id="finance-form" class="row g-3">
+                <div class="col-md-3">
+                    <select id="type" class="form-select">
+                        <option value="expense">Chi tiền (-)</option>
+                        <option value="income">Thu tiền (+)</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <input type="text" id="description" class="form-control" placeholder="Nội dung chi tiêu" required>
+                </div>
+                <div class="col-md-2">
+                    <input type="number" id="amount" class="form-control" placeholder="Số tiền" required>
+                </div>
+                <div class="col-md-2">
+                    <select id="category" class="form-select">
+                        <option value="food">Ăn uống</option>
+                        <option value="transport">Di chuyển</option>
+                        <option value="study">Học tập</option>
+                        <option value="entertainment">Giải trí</option>
+                        <option value="other">Khác</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-success w-100">Thêm</button>
+                </div>
+            </form>
+        </section>
+
+        <section class="card shadow-sm overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Nội dung</th>
+                            <th>Số tiền (VNĐ)</th>
+                            <th>Loại</th>
+                            <th class="text-center">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transaction-list">
+                        </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+</html>
